@@ -1,0 +1,23 @@
+allprojects {
+
+    buildscript {
+        ext.kotlinVersion = '1.2.50'
+
+        repositories {
+            mavenCentral()
+
+        }
+        dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        }
+    }
+
+    group 'ch.zuehlke.hatch'
+    version '1.0-SNAPSHOT'
+
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+}
