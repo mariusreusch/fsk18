@@ -1,62 +1,72 @@
 buildscript {
-    ext.serialization_version = '0.5.1'
-
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url "http://dl.bintray.com/kotlin/kotlin-dev" }
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://kotlin.bintray.com/kotlinx" }
+        mavenCentral()
     }
-
     dependencies {
+        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
         classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.31"
-        classpath 'com.moowork.gradle:gradle-node-plugin:1.2.0'
-        classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serialization_version"
     }
 }
+
+group "org.jetbrains.kotlinconf"
+version "1.0-SNAPSHOT"
+
+apply plugin: "kotlin2js"
+apply plugin: "kotlin-dce-js"
+apply plugin: "com.moowork.node"
+apply plugin: 'org.jetbrains.kotlin.frontend'
 
 repositories {
-    maven {
-        url "https://kotlin.bintray.com/kotlin-js-wrappers"
-        maven { url "https://kotlin.bintray.com/kotlinx" }
-    }
+    maven { url "http://dl.bintray.com/kotlin/kotlin-dev" }
+    maven { url "http://dl.bintray.com/kotlinx/kotlinx" }
+    maven { url "http://dl.bintray.com/hypnosphi/kotlin-wrappers" }
+    mavenCentral()
+}
+
+dependencies {
+    compile project(":common-js")
+    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
+    compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.10") { force = true }
+    compile "org.jetbrains:kotlin-react:0.0.3-kotlin-1.1.50-eap-18"
+   // compile "org.jetbrains:kotlin-react:15.6.1"
+    //compile "org.jetbrains:kotlin-react-dom:15.6.1"
+    compile "org.jetbrains:kotlin-react-dom:0.0.5-kotlin-1.1.50-eap-18"
 }
 
 
-apply plugin: 'kotlin-platform-js'
-apply plugin: 'org.jetbrains.kotlin.frontend'
-apply plugin: 'kotlin2js'
-apply plugin: 'kotlinx-serialization'
+compileKotlin2Js {
+    kotlinOptions {
+        sourceMap = true
+        sourceMapEmbedSources = "always"
+        moduleKind = 'commonjs'
+        metaInfo = false
+    }
+}
 
 kotlinFrontend {
-    downloadNodeJsVersion = '10.0.0'
+    downloadNodeJsVersion = 'latest'
+
 
     npm {
-        dependency("webpack-cli", "v2.0.12")
         dependency("react", "15.6.1")
         dependency("react-dom", "15.6.1")
-        dependency("react-router-dom", "4.2.2")
-        dependency("@material-ui/core", "1.1.0")
     }
 
-    sourceMaps = true
-
     webpackBundle {
-        bundleName = "main"
+        bundleName = "frontend"
+        sourceMapEnabled = true
         contentPath = file('src/main/web')
         proxyUrl = "http://localhost:8080"
     }
 }
 
-dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-js"
-
-    compile "org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion"
-    compile "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:0.22.5"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
-    compile "org.jetbrains.kotlinx:kotlinx-html-js:0.6.10"
-    compile "org.jetbrains:kotlin-react:16.4.0-pre.32-kotlin-1.2.41"
-    compile "org.jetbrains:kotlin-react-dom:16.4.0-pre.32-kotlin-1.2.41"
-
-    testCompile "org.jetbrains.kotlin:kotlin-test-js"
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
 }

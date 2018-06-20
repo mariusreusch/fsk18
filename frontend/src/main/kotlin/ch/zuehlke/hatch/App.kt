@@ -1,27 +1,19 @@
-package app
+package ch.zuehlke.hatch
 
-import react.*
-import react.dom.*
 import kotlinx.html.js.onClickFunction
-import org.w3c.dom.url.*
 import org.w3c.dom.EventSource
-import org.w3c.fetch.*
-
-import kotlinx.coroutines.experimental.await
-import kotlin.browser.*
-import kotlin.js.*
+import org.w3c.fetch.RequestInit
+import react.*
+import react.dom.button
+import kotlin.browser.window
+import kotlin.js.json
 
 class App : RComponent<RProps, RState>() {
 
-    override fun RBuilder.render() {
-        h2 {
-
-            +"Welcome to React with Kotlin"
-        }
-        button {
+    override fun RBuilder.render(): ReactElement? {
+        return button {
             +"Do it"
             attrs.onClickFunction = {
-                console.log("HELLLO")
 
                 listenToServerSentEventSource("/testflux")
                 listenToServerSentEventSource("/randomNumbers")
@@ -29,17 +21,13 @@ class App : RComponent<RProps, RState>() {
                 val response = window.fetch("/hello", object : RequestInit {
                     override var method: String? = "GET"
                     override var headers: dynamic = json("Accept" to "application/json")
-                });
+                })
 
                 response.then { resp -> console.log(resp) }
 
 
             }
-
-
         }
-
-
     }
 
     private fun listenToServerSentEventSource(url: String) {
