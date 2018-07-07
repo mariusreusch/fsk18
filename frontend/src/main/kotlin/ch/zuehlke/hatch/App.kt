@@ -1,46 +1,39 @@
 package ch.zuehlke.hatch
 
-import kotlinx.html.js.onClickFunction
-import org.w3c.dom.EventSource
-import org.w3c.fetch.RequestInit
+import ch.zuehlke.hatch.data.Person
+import ch.zuehlke.hatch.sse.EventListener
+import ch.zuehlke.hatch.sse.ServerSentEventSource
+import org.w3c.dom.MessageEvent
+import org.w3c.dom.events.Event
 import react.*
-import react.dom.button
-import kotlin.browser.window
-import kotlin.js.json
 
-class App : RComponent<RProps, RState>() {
+interface AppState : RState {
+    var persons: MutableList<Person>
+}
 
-    override fun RBuilder.render(): ReactElement? {
-        return button {
-            +"Do it"
-            attrs.onClickFunction = {
+class App : RComponent<RProps, AppState>() {
 
-                listenToServerSentEventSource("/testflux")
-                listenToServerSentEventSource("/randomNumbers")
-
-                val response = window.fetch("/hello", object : RequestInit {
-                    override var method: String? = "GET"
-                    override var headers: dynamic = json("Accept" to "application/json")
-                })
-
-                response.then { resp -> console.log(resp) }
-
+    override fun AppState.init() {
+        val onMessage = { event: Event ->
+            if (event is MessageEvent) {
+                console.log(event)
+                this.persons.add(JSON.parse<Person>("${event.data}"))
 
             }
         }
+
+        ServerSentEventSource("/persons", listOf(EventListener("message", onMessage))).startListening()
+        this.persons = mutableListOf()
+
     }
 
-    private fun listenToServerSentEventSource(url: String) {
-        var source = EventSource(url);
-        source.onopen = {
-            console.log("connection to $url opened");
-            console.log("readystate of $url is ${source.readyState}");
-        };
-        //source.addEventListener("random", {e -> console.log(e)}, false);
-        source.addEventListener("message", {e -> console.log(e)}, false);
-        source.onmessage = { message -> console.log("message: $message from $url") };
-        source.onerror = { console.log("onerror from $url") };
+    override fun RBuilder.render(): ReactElement? {
+
+        return personStream(state.persons)
     }
+
+
 }
+
 
 fun RBuilder.app() = child(App::class) {}

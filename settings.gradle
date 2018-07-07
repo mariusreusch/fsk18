@@ -15,6 +15,5 @@ rootProject.name = 'fsk18'
 
 include 'backend'
 include 'frontend'
-include 'common-js'
 include 'common'
 

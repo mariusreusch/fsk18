@@ -1,5 +1,6 @@
 package ch.zuehlke.hatch.fsk18.flux
 
+import ch.zuehlke.hatch.data.Person
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
@@ -11,7 +12,9 @@ import org.springframework.http.codec.ServerSentEvent
 
 
 @RestController
-class TextFluxController {
+class TextFluxController(private val personService: PersonService) {
+
+
 
     @GetMapping(path = ["/testflux"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun list(): Flux<String> {
@@ -21,11 +24,13 @@ class TextFluxController {
 
         val fromStream = Flux.fromStream(Stream.generate { "Hello $now" })
 
-        return Flux.zip(interval, fromStream).map { it ->
-            println("hello");
-            it.t2;
+        return Flux.zip(interval, fromStream).map { it.t2 }
+    }
 
-        }
+    @GetMapping("/persons")
+    fun streamAllPerson(): Flux<ServerSentEvent<Person>> {
+        return this.personService.streamPersons()
+                .map { ServerSentEvent.builder<Person>().data(it).build() }
     }
 
     @GetMapping("/randomNumbers")

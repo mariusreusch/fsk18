@@ -10,14 +10,14 @@ buildscript {
     dependencies {
         classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
         classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.31"
+        classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:0.5.1"
+
     }
 }
 
-group "org.jetbrains.kotlinconf"
-version "1.0-SNAPSHOT"
-
+apply plugin: 'kotlin-platform-js'
+apply plugin: 'kotlinx-serialization'
 apply plugin: "kotlin2js"
-apply plugin: "kotlin-dce-js"
 apply plugin: "com.moowork.node"
 apply plugin: 'org.jetbrains.kotlin.frontend'
 
@@ -28,29 +28,8 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    compile project(":common-js")
-    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
-    compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.10") { force = true }
-    compile "org.jetbrains:kotlin-react:0.0.3-kotlin-1.1.50-eap-18"
-   // compile "org.jetbrains:kotlin-react:15.6.1"
-    //compile "org.jetbrains:kotlin-react-dom:15.6.1"
-    compile "org.jetbrains:kotlin-react-dom:0.0.5-kotlin-1.1.50-eap-18"
-}
-
-
-compileKotlin2Js {
-    kotlinOptions {
-        sourceMap = true
-        sourceMapEmbedSources = "always"
-        moduleKind = 'commonjs'
-        metaInfo = false
-    }
-}
-
 kotlinFrontend {
     downloadNodeJsVersion = 'latest'
-
 
     npm {
         dependency("react", "15.6.1")
@@ -60,13 +39,33 @@ kotlinFrontend {
     webpackBundle {
         bundleName = "frontend"
         sourceMapEnabled = true
+        mode = 'production'
         contentPath = file('src/main/web')
         proxyUrl = "http://localhost:8080"
     }
 }
 
+dependencies {
+    expectedBy project(":common")
+
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:0.5.1"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
+    compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.10") { force = true }
+    compile "org.jetbrains:kotlin-react:0.0.3-kotlin-1.1.50-eap-18"
+    compile "org.jetbrains:kotlin-react-dom:0.0.5-kotlin-1.1.50-eap-18"
+}
+
+
 kotlin {
     experimental {
         coroutines "enable"
     }
+}
+
+compileKotlin2Js {
+    kotlinOptions.metaInfo = true
+    kotlinOptions.outputFile = "$project.buildDir.path/js/${project.name}.js"
+    kotlinOptions.sourceMap = true
+    kotlinOptions.moduleKind = 'commonjs'
+    kotlinOptions.main = "call"
 }
