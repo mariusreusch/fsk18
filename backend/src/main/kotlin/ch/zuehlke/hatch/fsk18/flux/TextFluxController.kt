@@ -10,11 +10,8 @@ import java.time.LocalDateTime
 import java.util.stream.Stream
 import org.springframework.http.codec.ServerSentEvent
 
-
 @RestController
 class TextFluxController(private val personService: PersonService) {
-
-
 
     @GetMapping(path = ["/testflux"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun list(): Flux<String> {
@@ -38,7 +35,6 @@ class TextFluxController(private val personService: PersonService) {
         return Flux.interval(Duration.ofSeconds(1))
                 .map {
                     val randomNumber = (1..10000).shuffled().last()
-                    println(randomNumber)
                     ServerSentEvent.builder<Int>()
                             .id("$randomNumber")
                             .data(randomNumber)

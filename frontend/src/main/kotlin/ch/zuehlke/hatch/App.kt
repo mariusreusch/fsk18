@@ -18,7 +18,6 @@ class App : RComponent<RProps, AppState>() {
             if (event is MessageEvent) {
                 console.log(event)
                 this.persons.add(JSON.parse<Person>("${event.data}"))
-
             }
         }
 
