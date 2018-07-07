@@ -14,10 +14,7 @@ class PersonService {
     fun streamPersons(): Flux<Person> {
         val randomInterval = Flux.interval(Duration.ofSeconds(2))
         return randomInterval.map {
-            val person = Person()
-            person.firstName = firstNames.shuffled().first()
-            person.lastName = lastNames.shuffled().first()
-            person
+            Person(firstNames.shuffled().first(), lastNames.shuffled().first())
         }
     }
 }

@@ -28,7 +28,6 @@ class App : RComponent<RProps, AppState>() {
     }
 
     override fun RBuilder.render(): ReactElement? {
-
         return personStream(state.persons)
     }
 

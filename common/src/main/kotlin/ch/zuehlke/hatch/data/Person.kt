@@ -4,7 +4,5 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-open class Person() {
-    var firstName: String = ""
-    var lastName: String = ""
+data class Person(val firstName: String, var lastName: String) {
 }
