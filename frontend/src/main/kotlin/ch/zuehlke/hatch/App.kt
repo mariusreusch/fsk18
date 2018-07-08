@@ -1,31 +1,29 @@
 package ch.zuehlke.hatch
 
 import ch.zuehlke.hatch.data.Person
-import ch.zuehlke.hatch.sse.EventListener
-import ch.zuehlke.hatch.sse.ServerSentEventSource
+import org.w3c.dom.EventSource
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
 import react.*
 
 interface AppState : RState {
-    var persons: MutableList<Person>
+    var persons: List<Person>
 }
 
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
-        val onMessage = handleMessage()
-        ServerSentEventSource("/persons", listOf(EventListener("message", onMessage))).startListening()
-        this.persons = mutableListOf()
+        EventSource("/persons").onmessage = handleMessage()
+        this.persons = emptyList()
     }
 
     private fun handleMessage(): (Event) -> Unit {
-        return { event: Event ->
+        return { event ->
             if (event is MessageEvent) {
                 val newPersons = this.state.persons.toMutableList()
                 newPersons.add(JSON.parse("${event.data}"))
                 setState {
-                    persons = newPersons
+                    persons = newPersons.toList()
                 }
             }
         }
