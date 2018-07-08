@@ -14,24 +14,26 @@ interface AppState : RState {
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
-        val onMessage = { event: Event ->
-            if (event is MessageEvent) {
-                console.log(event)
-                this.persons.add(JSON.parse<Person>("${event.data}"))
-            }
-        }
-
+        val onMessage = handleMessage()
         ServerSentEventSource("/persons", listOf(EventListener("message", onMessage))).startListening()
         this.persons = mutableListOf()
+    }
 
+    private fun handleMessage(): (Event) -> Unit {
+        return { event: Event ->
+            if (event is MessageEvent) {
+                val newPersons = this.state.persons.toMutableList()
+                newPersons.add(JSON.parse("${event.data}"))
+                setState {
+                    persons = newPersons
+                }
+            }
+        }
     }
 
     override fun RBuilder.render(): ReactElement? {
         return personStream(state.persons)
     }
-
-
 }
-
 
 fun RBuilder.app() = child(App::class) {}

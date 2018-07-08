@@ -9,7 +9,7 @@ import java.time.Duration
 class PersonService {
 
     private val firstNames = listOf("Franz", "Gerd", "Paul", "Sepp", "Karl-Heinz", "Georg")
-    private val lastNames = listOf("Beckenbauer", "Müller", "Meier", "Maier", "", "Georg")
+    private val lastNames = listOf("Beckenbauer", "Müller", "Breitner", "Maier", "Rummenigge", "Schwarzenbeck")
 
     fun streamPersons(): Flux<Person> {
         val randomInterval = Flux.interval(Duration.ofSeconds(2))

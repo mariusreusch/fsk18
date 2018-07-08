@@ -7,9 +7,10 @@ import react.dom.div
 import react.dom.p
 
 fun RBuilder.personStream(persons: List<Person>): ReactElement? {
-    return div { +"My new Title"
+    return div {
+        +"My new Title"
         for (person in persons) {
-            p { "Hello ${person.firstName} ${person.lastName}" }
+            p { +"Hello ${person.firstName} ${person.lastName}" }
         }
     }
 }
