@@ -8,13 +8,16 @@ import react.*
 
 interface AppState : RState {
     var persons: List<Person>
+    var tweets: List<String>
 }
 
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
         EventSource("/persons").onmessage = handleMessage()
+        EventSource("/liveTweets?withTerm=Java").onmessage = handleNewTweet()
         this.persons = emptyList()
+        this.tweets = emptyList()
     }
 
     private fun handleMessage(): (Event) -> Unit {
@@ -22,6 +25,7 @@ class App : RComponent<RProps, AppState>() {
             if (event is MessageEvent) {
                 val newPersons = this.state.persons.toMutableList()
                 newPersons.add(JSON.parse("${event.data}"))
+
                 setState {
                     persons = newPersons.toList()
                 }
@@ -29,8 +33,22 @@ class App : RComponent<RProps, AppState>() {
         }
     }
 
+    private fun handleNewTweet(): (Event) -> Unit {
+        return { event ->
+            if (event is MessageEvent) {
+                val newTweets = this.state.tweets.toMutableList()
+                newTweets.add(event.data.toString())
+                println("Hello new tweet ${event.data}")
+                console.log("Hello new tweet ${event.data}")
+                setState {
+                    tweets = newTweets.toList()
+                }
+            }
+        }
+    }
+
     override fun RBuilder.render(): ReactElement? {
-        return personStream(state.persons)
+        return twitterStream(state.tweets)
     }
 }
 
