@@ -1,6 +1,7 @@
 package ch.zuehlke.hatch
 
 import ch.zuehlke.hatch.data.Person
+import ch.zuehlke.hatch.data.Tweet
 import org.w3c.dom.EventSource
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
@@ -8,7 +9,7 @@ import react.*
 
 interface AppState : RState {
     var persons: List<Person>
-    var tweets: List<String>
+    var tweets: List<Tweet>
 }
 
 class App : RComponent<RProps, AppState>() {
@@ -37,9 +38,9 @@ class App : RComponent<RProps, AppState>() {
         return { event ->
             if (event is MessageEvent) {
                 val newTweets = this.state.tweets.toMutableList()
-                newTweets.add(event.data.toString())
-                println("Hello new tweet ${event.data}")
-                console.log("Hello new tweet ${event.data}")
+                val newTweet = JSON.parse<Tweet>("${event.data}")
+                newTweets.add(newTweet)
+                println("Hello new tweet $newTweet")
                 setState {
                     tweets = newTweets.toList()
                 }

@@ -1,5 +1,6 @@
 package ch.zuehlke.hatch.fsk18.infrastructure
 
+import ch.zuehlke.hatch.data.Tweet
 import com.twitter.hbc.ClientBuilder
 import com.twitter.hbc.core.Constants
 import com.twitter.hbc.core.HttpHosts
@@ -8,6 +9,7 @@ import com.twitter.hbc.core.event.Event
 import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.httpclient.BasicClient
 import com.twitter.hbc.httpclient.auth.OAuth1
+import kotlinx.serialization.json.JSON
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import reactor.core.publisher.FluxSink
@@ -17,14 +19,17 @@ import java.util.concurrent.LinkedBlockingQueue
 class TwitterClient() {
 
     @Async
-    fun observeTerm(sink: FluxSink<String>, term: String) {
+    fun observeTerm(sink: FluxSink<Tweet>, term: String) {
         val (msgQueue, hosebirdClient) = createTwitterClient(listOf(term))
         hosebirdClient.connect()
         while (!hosebirdClient.isDone) {
-            val tweet = msgQueue.take()
-            println("New tweet received: $tweet")
+            val tweetText = msgQueue.take()
+            //println("New tweet received: $tweetText")
+            val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
+            println("New tweet parsed: $tweet")
             sink.next(tweet)
         }
+        hosebirdClient.stop()
         sink.complete()
     }
 
