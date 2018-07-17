@@ -16,7 +16,11 @@ import reactor.core.publisher.FluxSink
 import java.util.concurrent.LinkedBlockingQueue
 
 @Service
-class TwitterClient() {
+class TwitterClient {
+
+    constructor() {
+        println("hello twitter client")
+    }
 
     @Async
     fun observeTerm(sink: FluxSink<Tweet>, term: String) {
@@ -24,10 +28,13 @@ class TwitterClient() {
         hosebirdClient.connect()
         while (!hosebirdClient.isDone) {
             val tweetText = msgQueue.take()
-            //println("New tweet received: $tweetText")
-            val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
-            println("New tweet parsed: $tweet")
-            sink.next(tweet)
+            if (tweetText.contains("created_at", true)) {
+                val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
+                if (tweet.text.contains(term, true)) {
+                    println("New tweet parsed for term $term")
+                    sink.next(tweet)
+                }
+            }
         }
         hosebirdClient.stop()
         sink.complete()
@@ -47,16 +54,13 @@ class TwitterClient() {
         val hosebirdAuth = OAuth1("qzO6uN9sQkcfyzRwDLlKybvRF", "UrF8dBWQkIZZlADzybUd2Ji4RfH34cBoLwcsaahJGAB54kwSIM",
                 "715527321516683264-kFaZt0qCsBHT77FOCqbw1NNiPjIMVZm", "qcPWlpQMikwb0DuC2e0n9o1fjq1kXdSjM5spqTkjEXHe8")
 
-
-        val builder = ClientBuilder()
-                .name("Hosebird-Client-01")                              // optional: mainly for the logs
+        val hosebirdClient = ClientBuilder()
+                .name("Hosebird-Client-for-${termsToTrack.joinToString("-")}")
                 .hosts(hosebirdHosts)
                 .authentication(hosebirdAuth)
                 .endpoint(hosebirdEndpoint)
                 .processor(StringDelimitedProcessor(msgQueue))
-                .eventMessageQueue(eventQueue)                          // optional: use this if you want to process client events
-
-        val hosebirdClient = builder.build()
+                .eventMessageQueue(eventQueue).build()
         return Pair(msgQueue, hosebirdClient)
     }
 }

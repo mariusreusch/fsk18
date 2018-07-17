@@ -43,6 +43,7 @@ dependencies {
     compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.11") { force = true }
     compile 'org.jetbrains:kotlin-react:16.4.1-pre.34-kotlin-1.2.51'
     compile 'org.jetbrains:kotlin-react-dom:16.4.1-pre.34-kotlin-1.2.51'
+    compile 'org.jetbrains:kotlin-styled:1.0.0-pre.34-kotlin-1.2.51'
 }
 
 kotlin {
