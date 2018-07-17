@@ -2,10 +2,14 @@ package ch.zuehlke.hatch
 
 import ch.zuehlke.hatch.data.Person
 import ch.zuehlke.hatch.data.Tweet
+import kotlinx.html.js.onClickFunction
 import org.w3c.dom.EventSource
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
 import react.*
+import react.dom.button
+import react.dom.div
+import react.dom.input
 
 interface AppState : RState {
     var persons: List<Person>
@@ -48,8 +52,21 @@ class App : RComponent<RProps, AppState>() {
         }
     }
 
-    override fun RBuilder.render(): ReactElement? {
-        return twitterStream(state.tweets)
+    override fun RBuilder.render() {
+
+        div {
+            input {
+
+            }
+            button {
+                +"Watch"
+                attrs.onClickFunction = {
+                    println("button clicked")
+                }
+
+            }
+            twitterStream(state.tweets)
+        }
     }
 }
 

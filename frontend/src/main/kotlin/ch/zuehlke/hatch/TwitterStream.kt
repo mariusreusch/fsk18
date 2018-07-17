@@ -8,9 +8,8 @@ import react.dom.p
 
 fun RBuilder.twitterStream(tweets: List<Tweet>): ReactElement? {
     return div {
-        +"My new Title"
         for (tweet in tweets) {
-            p { +"Hello ${tweet.text}" }
+            p { +tweet.text }
         }
     }
 }

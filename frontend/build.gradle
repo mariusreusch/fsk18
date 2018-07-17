@@ -1,39 +1,30 @@
 buildscript {
     repositories {
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "http://dl.bintray.com/kotlin/kotlin-dev" }
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://kotlin.bintray.com/kotlinx" }
-        mavenCentral()
     }
     dependencies {
         classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
-        classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.31"
+        classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.32"
         classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:0.5.1"
-
     }
 }
 
 apply plugin: 'kotlin-platform-js'
 apply plugin: 'kotlinx-serialization'
 apply plugin: "kotlin2js"
-apply plugin: "com.moowork.node"
 apply plugin: 'org.jetbrains.kotlin.frontend'
 
 repositories {
-    maven { url "http://dl.bintray.com/kotlin/kotlin-dev" }
-    maven { url "http://dl.bintray.com/kotlinx/kotlinx" }
-    maven { url "http://dl.bintray.com/hypnosphi/kotlin-wrappers" }
-    mavenCentral()
+    maven { url "https://kotlin.bintray.com/kotlin-js-wrappers" }
 }
 
 kotlinFrontend {
     downloadNodeJsVersion = 'latest'
 
     npm {
-        dependency("react", "15.6.1")
-        dependency("react-dom", "15.6.1")
+        dependency("react", "16.4.1")
+        dependency("react-dom", "16.4.1")
     }
 
     webpackBundle {
@@ -50,11 +41,10 @@ dependencies {
 
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:0.5.1"
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
-    compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.10") { force = true }
-    compile "org.jetbrains:kotlin-react:0.0.3-kotlin-1.1.50-eap-18"
-    compile "org.jetbrains:kotlin-react-dom:0.0.5-kotlin-1.1.50-eap-18"
+    compile("org.jetbrains.kotlinx:kotlinx-html-js:0.6.11") { force = true }
+    compile 'org.jetbrains:kotlin-react:16.4.1-pre.34-kotlin-1.2.51'
+    compile 'org.jetbrains:kotlin-react-dom:16.4.1-pre.34-kotlin-1.2.51'
 }
-
 
 kotlin {
     experimental {

@@ -1,13 +1,12 @@
 allprojects {
 
     buildscript {
-        ext.kotlinVersion = '1.2.50'
+        ext.kotlinVersion = '1.2.51'
 
         repositories {
-            maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
+            jcenter()
             maven { url "https://kotlin.bintray.com/kotlinx" }
             maven { url 'https://maven.google.com' }
-            mavenCentral()
 
         }
         dependencies {
@@ -22,11 +21,7 @@ allprojects {
 
     repositories {
         jcenter()
-        mavenCentral()
-
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap-1.2' }
         maven { url "https://kotlin.bintray.com/kotlinx" }
-        maven { url 'https://maven.google.com' }
     }
 
 }
