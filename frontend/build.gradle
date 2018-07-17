@@ -4,7 +4,6 @@ buildscript {
         maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
     }
     dependencies {
-        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
         classpath "org.jetbrains.kotlin:kotlin-frontend-plugin:0.0.32"
         classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:0.5.1"
     }
