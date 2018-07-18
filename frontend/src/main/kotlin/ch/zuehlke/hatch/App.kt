@@ -9,7 +9,12 @@ import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.events.Event
 import react.*
-import react.dom.*
+import react.dom.div
+import react.dom.li
+import react.dom.ul
+import styled.css
+import styled.styledButton
+import styled.styledInput
 
 interface AppState : RState {
     var tweets: List<ReceivedTweet>
@@ -57,12 +62,6 @@ class App : RComponent<RProps, AppState>() {
                 }
             }
 
-//            <div class="progress">
-//            <div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-//            <div class="progress-bar bg-success" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
-//            <div class="progress-bar bg-info" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-//            </div>
-
             div("row") {
                 div("col") {
                     twitterStream(state.tweets)
@@ -72,7 +71,10 @@ class App : RComponent<RProps, AppState>() {
     }
 
     private fun RBuilder.watchEntryInput() {
-        input {
+        styledInput {
+            css {
+                margin = "0.5rem"
+            }
             attrs.value = state.twitterTermToWatchInputValue
             attrs.onChangeFunction = {
                 val target = it.target as HTMLInputElement
@@ -81,7 +83,10 @@ class App : RComponent<RProps, AppState>() {
                 }
             }
         }
-        button {
+        styledButton {
+            css {
+                margin = "0.5rem"
+            }
             +"Watch"
             attrs.onClickFunction = {
                 if (state.twitterTermToWatchInputValue.isNotBlank()) {

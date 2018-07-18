@@ -18,10 +18,6 @@ import java.util.concurrent.LinkedBlockingQueue
 @Service
 class TwitterClient {
 
-    constructor() {
-        println("hello twitter client")
-    }
-
     @Async
     fun observeTerm(sink: FluxSink<Tweet>, term: String) {
         val (msgQueue, hosebirdClient) = createTwitterClient(listOf(term))
@@ -31,7 +27,6 @@ class TwitterClient {
             if (tweetText.contains("created_at", true)) {
                 val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
                 if (tweet.text.contains(term, true)) {
-                    println("New tweet parsed for term $term")
                     sink.next(tweet)
                 }
             }

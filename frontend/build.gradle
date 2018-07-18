@@ -24,6 +24,8 @@ kotlinFrontend {
     npm {
         dependency("react", "16.4.1")
         dependency("react-dom", "16.4.1")
+        dependency("inline-style-prefixer", "4.0.2")
+        dependency("styled-components", "3.3.3")
     }
 
     webpackBundle {

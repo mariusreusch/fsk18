@@ -2,12 +2,13 @@ package ch.zuehlke.hatch
 
 import react.RBuilder
 import react.dom.*
+import styled.css
+import styled.styledSpan
 
 fun RBuilder.twitterStream(receivedTweets: List<ReceivedTweet>) {
     div {
-        for (receivedTweet in receivedTweets) {
+        for (receivedTweet in receivedTweets.reversed().take(50)) {
             div("card") {
-                //attrs.style = "width: 18rem;"
                 div("card-body") {
                     h5("card-title") {
                         +receivedTweet.tweet.tweetCreator.userName
@@ -19,7 +20,12 @@ fun RBuilder.twitterStream(receivedTweets: List<ReceivedTweet>) {
                         +receivedTweet.tweet.text
                     }
                     p {
-                        span("badge badge-info") { +receivedTweet.watchedTwitterTerm.term }
+                        styledSpan {
+                            css {
+                                classes = mutableListOf("badge", "badge-info")
+                            }
+                            +receivedTweet.watchedTwitterTerm.term
+                        }
                     }
                 }
 
