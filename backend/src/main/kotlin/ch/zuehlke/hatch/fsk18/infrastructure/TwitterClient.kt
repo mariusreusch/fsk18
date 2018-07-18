@@ -16,7 +16,7 @@ import reactor.core.publisher.FluxSink
 import java.util.concurrent.LinkedBlockingQueue
 
 @Service
-class TwitterClient {
+class TwitterClient(private val twitterClientProperties: TwitterClientProperties) {
 
     @Async
     fun observeTerm(sink: FluxSink<Tweet>, term: String) {
@@ -45,9 +45,8 @@ class TwitterClient {
 
         hosebirdEndpoint.trackTerms(termsToTrack)
 
-        // These secrets should be read from a config file
-        val hosebirdAuth = OAuth1("qzO6uN9sQkcfyzRwDLlKybvRF", "UrF8dBWQkIZZlADzybUd2Ji4RfH34cBoLwcsaahJGAB54kwSIM",
-                "715527321516683264-kFaZt0qCsBHT77FOCqbw1NNiPjIMVZm", "qcPWlpQMikwb0DuC2e0n9o1fjq1kXdSjM5spqTkjEXHe8")
+        val hosebirdAuth = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
+                twitterClientProperties.token, twitterClientProperties.tokenSecret)
 
         val hosebirdClient = ClientBuilder()
                 .name("Hosebird-Client-for-${termsToTrack.joinToString("-")}")
