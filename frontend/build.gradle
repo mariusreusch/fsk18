@@ -19,7 +19,7 @@ repositories {
 }
 
 kotlinFrontend {
-    downloadNodeJsVersion = 'latest'
+    downloadNodeJsVersion = '10.6.0'
 
     npm {
         dependency("react", "16.4.1")
