@@ -9,8 +9,10 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.httpclient.BasicClient
 import com.twitter.hbc.httpclient.auth.OAuth1
 import kotlinx.serialization.json.JSON
+import org.springframework.stereotype.Service
 import java.util.concurrent.LinkedBlockingQueue
 
+@Service
 class TwitterClient(twitterClientProperties: TwitterClientProperties) {
 
     private val msgQueue: LinkedBlockingQueue<String> = LinkedBlockingQueue<String>()
@@ -18,6 +20,8 @@ class TwitterClient(twitterClientProperties: TwitterClientProperties) {
     private val hosebirdEndpoint = StatusesFilterEndpoint()
 
     init {
+        println("init client")
+        println(twitterClientProperties.consumerKey)
         val hosebirdAuth = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
                 twitterClientProperties.token, twitterClientProperties.tokenSecret)
 
@@ -29,7 +33,6 @@ class TwitterClient(twitterClientProperties: TwitterClientProperties) {
                 .processor(StringDelimitedProcessor(msgQueue))
                 .build()
 
-        hosebirdClient.connect()
     }
 
     fun observe(termToObserve: String, onTweetReceived: (Tweet) -> Unit, onObservationCompleted: () -> Unit) {
@@ -45,6 +48,8 @@ class TwitterClient(twitterClientProperties: TwitterClientProperties) {
     }
 
     private fun startObserving(termToObserve: String, onTweetReceived: (Tweet) -> Unit) {
+        connectIfNecessary()
+
         hosebirdEndpoint.trackTerms(listOf(termToObserve))
 
         while (!hosebirdClient.isDone) {
@@ -55,6 +60,14 @@ class TwitterClient(twitterClientProperties: TwitterClientProperties) {
                     onTweetReceived(tweet)
                 }
             }
+        }
+    }
+
+    private fun connectIfNecessary() {
+        try {
+            hosebirdClient.connect()
+        } catch (e: IllegalStateException) {
+            println("Connection already established.")
         }
     }
 }

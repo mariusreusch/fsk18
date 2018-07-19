@@ -6,12 +6,10 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.FluxSink
 
 @Service
-class TwitterClientService(private val twitterClientProperties: TwitterClientProperties) {
+class TwitterClientService(private val twitterClient: TwitterClient) {
 
     @Async
     fun observeTerm(term: String, sink: FluxSink<Tweet>) {
-        val twitterClient = TwitterClient(twitterClientProperties)
-
         sink.onCancel {
             twitterClient.stopObserving()
         }

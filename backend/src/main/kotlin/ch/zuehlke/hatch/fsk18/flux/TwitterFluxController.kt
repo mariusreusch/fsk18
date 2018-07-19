@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux
 class TwitterFluxController(private val twitterClientService: TwitterClientService) {
 
     @GetMapping(path = ["/liveTweets"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun stockTransactionEvents(@RequestParam withTerm: String): Flux<Tweet> {
+    fun streamTweetsContaining(@RequestParam withTerm: String): Flux<Tweet> {
         return Flux.create { sink -> twitterClientService.observeTerm(withTerm, sink) }
     }
 }
