@@ -5,57 +5,56 @@ import com.twitter.hbc.ClientBuilder
 import com.twitter.hbc.core.Constants
 import com.twitter.hbc.core.HttpHosts
 import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint
-import com.twitter.hbc.core.event.Event
 import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.httpclient.BasicClient
 import com.twitter.hbc.httpclient.auth.OAuth1
 import kotlinx.serialization.json.JSON
-import org.springframework.scheduling.annotation.Async
-import org.springframework.stereotype.Service
-import reactor.core.publisher.FluxSink
 import java.util.concurrent.LinkedBlockingQueue
 
-@Service
-class TwitterClient(private val twitterClientProperties: TwitterClientProperties) {
+class TwitterClient(twitterClientProperties: TwitterClientProperties) {
 
-    @Async
-    fun observeTerm(sink: FluxSink<Tweet>, term: String) {
-        val (msgQueue, hosebirdClient) = createTwitterClient(listOf(term))
+    private val msgQueue: LinkedBlockingQueue<String> = LinkedBlockingQueue<String>()
+    private val hosebirdClient: BasicClient
+    private val hosebirdEndpoint = StatusesFilterEndpoint()
+
+    init {
+        val hosebirdAuth = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
+                twitterClientProperties.token, twitterClientProperties.tokenSecret)
+
+        hosebirdClient = ClientBuilder()
+                .name("Hosebird-Client-forFSK18")
+                .hosts(HttpHosts(Constants.STREAM_HOST))
+                .authentication(hosebirdAuth)
+                .endpoint(hosebirdEndpoint)
+                .processor(StringDelimitedProcessor(msgQueue))
+                .build()
+
         hosebirdClient.connect()
+    }
+
+    fun observe(termToObserve: String, onTweetReceived: (Tweet) -> Unit, onObservationCompleted: () -> Unit) {
+        startObserving(termToObserve, onTweetReceived)
+
+        stopObserving()
+
+        onObservationCompleted()
+    }
+
+    fun stopObserving() {
+        this.hosebirdClient.stop()
+    }
+
+    private fun startObserving(termToObserve: String, onTweetReceived: (Tweet) -> Unit) {
+        hosebirdEndpoint.trackTerms(listOf(termToObserve))
+
         while (!hosebirdClient.isDone) {
             val tweetText = msgQueue.take()
             if (tweetText.contains("created_at", true)) {
                 val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
-                if (tweet.text.contains(term, true)) {
-                    sink.next(tweet)
+                if (tweet.text.contains(termToObserve, true)) {
+                    onTweetReceived(tweet)
                 }
             }
         }
-        hosebirdClient.stop()
-        sink.complete()
-    }
-
-    private fun createTwitterClient(termsToTrack: List<String>): Pair<LinkedBlockingQueue<String>, BasicClient> {
-        val msgQueue = LinkedBlockingQueue<String>(100000)
-        val eventQueue = LinkedBlockingQueue<Event>(1000)
-
-        /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
-        val hosebirdHosts = HttpHosts(Constants.STREAM_HOST)
-        val hosebirdEndpoint = StatusesFilterEndpoint()
-
-        hosebirdEndpoint.trackTerms(termsToTrack)
-
-        val hosebirdAuth = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
-                twitterClientProperties.token, twitterClientProperties.tokenSecret)
-
-        val hosebirdClient = ClientBuilder()
-                .name("Hosebird-Client-for-${termsToTrack.joinToString("-")}")
-                .hosts(hosebirdHosts)
-                .authentication(hosebirdAuth)
-                .endpoint(hosebirdEndpoint)
-                .processor(StringDelimitedProcessor(msgQueue))
-                .eventMessageQueue(eventQueue).build()
-        return Pair(msgQueue, hosebirdClient)
     }
 }
-
