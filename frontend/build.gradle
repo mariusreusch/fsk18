@@ -31,7 +31,7 @@ kotlinFrontend {
     webpackBundle {
         bundleName = "frontend"
         sourceMapEnabled = true
-        mode = 'production'
+        //mode = 'production'
         contentPath = file('src/main/web')
         proxyUrl = "http://localhost:8080"
     }

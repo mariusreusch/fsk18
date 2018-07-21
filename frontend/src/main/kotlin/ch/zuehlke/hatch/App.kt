@@ -1,7 +1,6 @@
 package ch.zuehlke.hatch
 
 import ch.zuehlke.hatch.data.Tweet
-import kotlinx.html.classes
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.EventSource
@@ -20,26 +19,17 @@ interface AppState : RState {
     var tweets: List<ReceivedTweet>
     var twitterTermToWatchInputValue: String
     var twitterTermsToWatch: List<WatchedTwitterTerm>
+    var currentlyWatching: Boolean
+    var eventSource: EventSource
 }
 
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
+        println("init")
         this.tweets = emptyList()
         this.twitterTermsToWatch = emptyList()
-    }
-
-    private fun handleNewTweet(watchedTwitterTerm: WatchedTwitterTerm): (Event) -> Unit {
-        return { event ->
-            if (event is MessageEvent) {
-                val newTweets = this.state.tweets.toMutableList()
-                val newTweet = JSON.parse<Tweet>("${event.data}")
-                newTweets.add(ReceivedTweet(newTweet, watchedTwitterTerm))
-                setState {
-                    tweets = newTweets.toList()
-                }
-            }
-        }
+        this.currentlyWatching = false
     }
 
     override fun RBuilder.render() {
@@ -48,6 +38,10 @@ class App : RComponent<RProps, AppState>() {
                 div("col") {
                     watchEntryInput()
                 }
+                div("col") {
+                    buttonGroup()
+
+                }
             }
 
             div("row") {
@@ -55,7 +49,7 @@ class App : RComponent<RProps, AppState>() {
                     ul {
                         for (twitterTermsToWatch in state.twitterTermsToWatch) {
                             li {
-                                +"${twitterTermsToWatch.term} (${state.tweets.count { it.watchedTwitterTerm == twitterTermsToWatch }})"
+                                +"${twitterTermsToWatch.term} (${state.tweets.count { it.watchedTwitterTerm.contains(twitterTermsToWatch) }})"
                             }
                         }
                     }
@@ -70,11 +64,29 @@ class App : RComponent<RProps, AppState>() {
         }
     }
 
+    private fun handleNewTweet(): (Event) -> Unit {
+        return { event ->
+            if (event is MessageEvent) {
+                val newTweets = this.state.tweets.toMutableList()
+                val newTweet = JSON.parse<Tweet>("${event.data}")
+                val watchedTermsInNewTweet = this.state.twitterTermsToWatch.filter { newTweet.text.contains(it.term, true) }
+
+                newTweets.add(ReceivedTweet(newTweet, watchedTermsInNewTweet))
+                setState {
+                    tweets = newTweets.toList()
+                }
+            }
+        }
+    }
+
     private fun RBuilder.watchEntryInput() {
         styledInput {
             css {
                 margin = "0.5rem"
+                classes = mutableListOf("form-control")
             }
+
+            attrs.placeholder = "Enter one term to watch"
             attrs.value = state.twitterTermToWatchInputValue
             attrs.onChangeFunction = {
                 val target = it.target as HTMLInputElement
@@ -83,18 +95,21 @@ class App : RComponent<RProps, AppState>() {
                 }
             }
         }
+
+    }
+
+    private fun RBuilder.buttonGroup() {
         styledButton {
+            +"Add Term To Watch"
             css {
+                classes = mutableListOf("btn", "btn-primary")
                 margin = "0.5rem"
             }
-            +"Watch"
+            attrs.disabled = state.currentlyWatching || state.twitterTermToWatchInputValue.isEmpty()
             attrs.onClickFunction = {
                 if (state.twitterTermToWatchInputValue.isNotBlank()) {
                     val newTwitterTermsToWatch = state.twitterTermsToWatch.toMutableList()
-
                     val watchedTwitterTerm = WatchedTwitterTerm(state.twitterTermToWatchInputValue)
-                    val eventSource = EventSource("/liveTweets?withTerm=${state.twitterTermToWatchInputValue}")
-                    eventSource.onmessage = handleNewTweet(watchedTwitterTerm)
                     newTwitterTermsToWatch.add(watchedTwitterTerm)
                     setState {
                         twitterTermsToWatch = newTwitterTermsToWatch.toList()
@@ -104,7 +119,49 @@ class App : RComponent<RProps, AppState>() {
 
                 }
             }
-            attrs.classes = setOf("btn", "btn-primary")
+        }
+
+        styledButton {
+            +"Start Watching"
+            css {
+                margin = "0.5rem"
+                classes = mutableListOf("btn", "btn-primary")
+            }
+            attrs.disabled = state.twitterTermsToWatch.isEmpty() || state.currentlyWatching
+            attrs.onClickFunction = {
+                if (state.twitterTermsToWatch.isNotEmpty()) {
+                    val newTwitterTermsToWatch = state.twitterTermsToWatch.toMutableList()
+                    val requestParams = newTwitterTermsToWatch.map { it.term }.joinToString("&withTerm=")
+                    val url = "/liveTweets?withTerm=$requestParams"
+                    setState {
+                        eventSource = EventSource(url)
+                        eventSource.onmessage = handleNewTweet()
+                        currentlyWatching = true
+                    }
+
+
+                }
+            }
+        }
+
+        styledButton {
+            +"Reset"
+            css {
+                margin = "0.5rem"
+                classes = mutableListOf("btn", "btn-primary")
+            }
+            attrs.disabled = !state.currentlyWatching
+            attrs.onClickFunction = {
+                state.eventSource.close()
+                setState {
+                    currentlyWatching = false
+                    currentlyWatching = false
+                    twitterTermToWatchInputValue = ""
+                    twitterTermsToWatch = emptyList()
+                    tweets = emptyList()
+                }
+
+            }
         }
     }
 }

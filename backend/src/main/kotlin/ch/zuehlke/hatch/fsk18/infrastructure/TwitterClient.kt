@@ -16,58 +16,54 @@ import java.util.concurrent.LinkedBlockingQueue
 class TwitterClient(twitterClientProperties: TwitterClientProperties) {
 
     private val msgQueue: LinkedBlockingQueue<String> = LinkedBlockingQueue<String>()
-    private val hosebirdClient: BasicClient
+    private var hosebirdClient: BasicClient? = null
     private val hosebirdEndpoint = StatusesFilterEndpoint()
+    private val hosebirdAuth: OAuth1 = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
+            twitterClientProperties.token, twitterClientProperties.tokenSecret)
 
-    init {
-        println("init client")
-        println(twitterClientProperties.consumerKey)
-        val hosebirdAuth = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
-                twitterClientProperties.token, twitterClientProperties.tokenSecret)
+    fun observe(termsToObserve: List<String>, onTweetReceived: (Tweet) -> Unit, onObservationCompleted: () -> Unit) {
+        connect()
 
-        hosebirdClient = ClientBuilder()
-                .name("Hosebird-Client-forFSK18")
-                .hosts(HttpHosts(Constants.STREAM_HOST))
-                .authentication(hosebirdAuth)
-                .endpoint(hosebirdEndpoint)
-                .processor(StringDelimitedProcessor(msgQueue))
-                .build()
-
-    }
-
-    fun observe(termToObserve: String, onTweetReceived: (Tweet) -> Unit, onObservationCompleted: () -> Unit) {
-        startObserving(termToObserve, onTweetReceived)
+        startObserving(termsToObserve, onTweetReceived)
 
         stopObserving()
 
         onObservationCompleted()
     }
 
-    fun stopObserving() {
-        this.hosebirdClient.stop()
-    }
+    private fun startObserving(termsToObserve: List<String>, onTweetReceived: (Tweet) -> Unit) {
 
-    private fun startObserving(termToObserve: String, onTweetReceived: (Tweet) -> Unit) {
-        connectIfNecessary()
+        hosebirdEndpoint.trackTerms(termsToObserve)
 
-        hosebirdEndpoint.trackTerms(listOf(termToObserve))
-
-        while (!hosebirdClient.isDone) {
+        while (hosebirdClient?.isDone == false) {
             val tweetText = msgQueue.take()
             if (tweetText.contains("created_at", true)) {
                 val tweet = JSON.nonstrict.parse<Tweet>(tweetText)
-                if (tweet.text.contains(termToObserve, true)) {
+                val tweetTextContainsAtLeastOneTrackedTerm = termsToObserve.any { tweet.text.contains(it, true) }
+                if (tweetTextContainsAtLeastOneTrackedTerm) {
                     onTweetReceived(tweet)
                 }
             }
         }
     }
 
-    private fun connectIfNecessary() {
+    private fun connect() {
         try {
-            hosebirdClient.connect()
+            hosebirdClient = ClientBuilder()
+                    .name("Hosebird-Client-forFSK18")
+                    .hosts(HttpHosts(Constants.STREAM_HOST))
+                    .authentication(hosebirdAuth)
+                    .endpoint(hosebirdEndpoint)
+                    .processor(StringDelimitedProcessor(msgQueue))
+                    .build()
+            hosebirdClient?.connect()
         } catch (e: IllegalStateException) {
             println("Connection already established.")
         }
+    }
+
+    fun stopObserving() {
+        this.hosebirdClient?.stop()
+        this.hosebirdClient?.exitEvent
     }
 }
