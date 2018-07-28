@@ -13,8 +13,6 @@ class TwitterFluxController(private val tweetObserver: TweetObserver) {
 
     @GetMapping(path = ["/liveTweets"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun streamTweetsContaining(@RequestParam withTerm: List<String>): Flux<Tweet> {
-        println("start to observer terms $withTerm")
-
         return Flux.create { tweetObserver.observeTerm(withTerm, it) }
     }
 }

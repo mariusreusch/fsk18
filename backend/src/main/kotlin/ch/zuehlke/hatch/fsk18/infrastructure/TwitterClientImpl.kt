@@ -19,14 +19,13 @@ import java.util.concurrent.LinkedBlockingQueue
 @Profile("!mock")
 class TwitterClientImpl(twitterClientProperties: TwitterClientProperties) : TwitterClient {
 
-    private val msgQueue: LinkedBlockingQueue<String> = LinkedBlockingQueue<String>()
+    private val msgQueue: LinkedBlockingQueue<String> = LinkedBlockingQueue()
     private var hosebirdClient: BasicClient? = null
     private val hosebirdEndpoint = StatusesFilterEndpoint()
     private val hosebirdAuth: OAuth1 = OAuth1(twitterClientProperties.consumerKey, twitterClientProperties.consumerSecret,
             twitterClientProperties.token, twitterClientProperties.tokenSecret)
 
     override fun observe(termsToObserve: List<String>, onTweetReceived: (Tweet) -> Unit, onObservationCompleted: () -> Unit) {
-        println("going to connect")
         connect()
 
         startObserving(termsToObserve, onTweetReceived)
