@@ -13,7 +13,6 @@ class TweetObserver(private val twitterClient: TwitterClient) {
         sink.onCancel {
             twitterClient.stopObserving()
         }
-
         twitterClient.observe(term, { sink.next(it) }, { sink.complete() })
     }
 }

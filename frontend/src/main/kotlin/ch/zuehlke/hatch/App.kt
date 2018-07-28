@@ -26,7 +26,6 @@ interface AppState : RState {
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
-        println("init")
         this.tweets = emptyList()
         this.twitterTermsToWatch = emptyList()
         this.currentlyWatching = false
@@ -86,7 +85,7 @@ class App : RComponent<RProps, AppState>() {
                 classes = mutableListOf("form-control")
             }
 
-            attrs.placeholder = "Enter one term to watch"
+            attrs.placeholder = "Enter a term to watch"
             attrs.value = state.twitterTermToWatchInputValue
             attrs.onChangeFunction = {
                 val target = it.target as HTMLInputElement
@@ -105,7 +104,7 @@ class App : RComponent<RProps, AppState>() {
                 classes = mutableListOf("btn", "btn-primary")
                 margin = "0.5rem"
             }
-            attrs.disabled = state.currentlyWatching || state.twitterTermToWatchInputValue.isEmpty()
+            attrs.disabled = state.currentlyWatching || state.twitterTermToWatchInputValue.isNullOrEmpty()
             attrs.onClickFunction = {
                 if (state.twitterTermToWatchInputValue.isNotBlank()) {
                     val newTwitterTermsToWatch = state.twitterTermsToWatch.toMutableList()
