@@ -1,4 +1,4 @@
-package ch.zuehlke.hatch.fsk18.flux
+package ch.zuehlke.hatch.fsk18.resource
 
 import ch.zuehlke.hatch.data.Tweet
 import ch.zuehlke.hatch.fsk18.infrastructure.TweetObserver

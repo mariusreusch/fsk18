@@ -1,4 +1,4 @@
-package ch.zuehlke.hatch.fsk18.flux
+package ch.zuehlke.hatch.fsk18.resource
 
 import ch.zuehlke.hatch.data.Person
 import org.springframework.stereotype.Service

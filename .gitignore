@@ -1,3 +1,10 @@
 build
 .gradle
 .idea
+!.idea/runConfigurations
+backend/src/main/java/
+backend/src/test/
+common/src/main/resources/
+common/src/test/
+frontend/src/main/resources/
+frontend/src/test/
